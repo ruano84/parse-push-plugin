@@ -134,10 +134,14 @@ public class ParsePushPlugin extends CordovaPlugin {
     * keep reusing the saved callback context to call the javascript PN handler
     */
    public static void jsCallback(JSONObject _json){
+      Log.d(LOGTAG, "Testing if _json object still present in jsCallback(JSONObject _json)" + _json.toString());
       jsCallback(_json, "RECEIVE");
    }
 
    public static void jsCallback(JSONObject _json, String pushAction){
+
+      Log.d(LOGTAG, "Testing if _json object still present in jsCallback(JSONObject _json, String pushAction) called with" + pushAction + "Action" + _json.toString());
+
       List<PluginResult> cbParams = new ArrayList<PluginResult>();
     	cbParams.add(new PluginResult(PluginResult.Status.OK, _json));
     	cbParams.add(new PluginResult(PluginResult.Status.OK, pushAction));
