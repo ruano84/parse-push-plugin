@@ -35,6 +35,7 @@ public class ParsePushPlugin extends CordovaPlugin {
 
    private static CordovaWebView gWebView;
    private static boolean gForeground = false;
+   private static boolean helperPause = false;
 
    public static final String LOGTAG = "ParsePushPlugin";
 
@@ -140,22 +141,31 @@ public class ParsePushPlugin extends CordovaPlugin {
    public static void jsCallback(JSONObject _json, String pushAction){
 
       List<PluginResult> cbParams = new ArrayList<PluginResult>();
-    	cbParams.add(new PluginResult(PluginResult.Status.OK, _json));
-    	cbParams.add(new PluginResult(PluginResult.Status.OK, pushAction));
+    	cbParams.add(new PluginResult(PluginResult.Status.OK, _json.toString()));
+      cbParams.add(new PluginResult(PluginResult.Status.OK, pushAction));
+    	//cbParams.add(new PluginResult(PluginResult.Status.OK, _json));
 
-    	PluginResult dataResult = new PluginResult(PluginResult.Status.OK, cbParams);
+    	   //avoid blank
+      PluginResult dataResult;
+      if (pushAction.equals("OPEN")) {
+        if (helperPause)
+          dataResult = new PluginResult(PluginResult.Status.OK, _json);
+        else
+          dataResult = new PluginResult(PluginResult.Status.OK, cbParams);
+      } else {
+        dataResult = new PluginResult(PluginResult.Status.OK, _json); 
+      }
       dataResult.setKeepCallback(true);
 
 
       if(gEventCallback != null){
 
-        gEventCallback.sendPluginResult(new PluginResult(PluginResult.Status.OK, _json));
-
-        // gEventCallback.sendPluginResult(dataResult);
+        gEventCallback.sendPluginResult(dataResult);
       } else{
          //
          // save the incoming push payloads until gEventCallback is ready.
          // put a sensible limit on how queue size;
+        Log.d(LOGTAG, "sending the notification when gEventCallback is ready");
          if(pnQueue.size() < 10){
             //pnQueue.add(new PNQueueItem(_json, pushAction));
             pnQueue.add(dataResult);
@@ -179,6 +189,7 @@ public class ParsePushPlugin extends CordovaPlugin {
    public void onPause(boolean multitasking) {
       super.onPause(multitasking);
       gForeground = false;
+      helperPause = true;
    }
 
    @Override
@@ -193,6 +204,7 @@ public class ParsePushPlugin extends CordovaPlugin {
       gWebView = null;
     	gForeground = false;
       gEventCallback = null;
+      helperPause = false;
 
     	super.onDestroy();
    }
